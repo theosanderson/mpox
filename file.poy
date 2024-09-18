@@ -8,7 +8,7 @@ def fetch_genbank_record(genbank_id):
 
 def write_protein_fasta(gene_name, protein_sequence, output_dir="."):
     with open(f"{output_dir}/{gene_name}.fa", "w") as fasta_file:
-        fasta_file.write(f"{protein_sequence}")
+        fasta_file.write(f"{protein_sequence}*")
 
 def main(genbank_id):
     record = fetch_genbank_record(genbank_id)
@@ -19,7 +19,9 @@ def main(genbank_id):
             if "translation" in feature.qualifiers:
                 protein_sequence = feature.qualifiers["translation"][0]
                 write_protein_fasta(gene_name, protein_sequence)
-                print(f"Created {gene_name}.fa")
+                print(
+f"""- name: {gene_name}
+  sequence: "[[URL:https://theosanderson.github.io/mpox/{gene_name}.fa]]""")
             else:
                 print(f"Warning: No protein sequence found for gene {gene_name}")
 
