@@ -1,0 +1,32 @@
+import sys
+from Bio import Entrez, SeqIO
+
+def fetch_genbank_record(genbank_id):
+    Entrez.email = "your_email@example.com"  # Replace with your email
+    handle = Entrez.efetch(db="nucleotide", id=genbank_id, rettype="gb", retmode="text")
+    return SeqIO.read(handle, "genbank")
+
+def write_protein_fasta(gene_name, protein_sequence, output_dir="."):
+    with open(f"{output_dir}/{gene_name}.fa", "w") as fasta_file:
+        fasta_file.write(f"{protein_sequence}")
+
+def main(genbank_id):
+    record = fetch_genbank_record(genbank_id)
+    
+    for feature in record.features:
+        if feature.type == "CDS":
+            gene_name = feature.qualifiers.get("gene", ["Unknown"])[0]
+            if "translation" in feature.qualifiers:
+                protein_sequence = feature.qualifiers["translation"][0]
+                write_protein_fasta(gene_name, protein_sequence)
+                print(f"Created {gene_name}.fa")
+            else:
+                print(f"Warning: No protein sequence found for gene {gene_name}")
+
+if __name__ == "__main__":
+    if len(sys.argv) != 2:
+        print("Usage: python script.py <GenBank_ID>")
+        sys.exit(1)
+    
+    genbank_id = sys.argv[1]
+    main(genbank_id)
